@@ -1,0 +1,14 @@
+**/.idea
+*~
+*.swp
+*.o
+*.so
+build
+dist
+*.egg-info/
+
+examples/a.out
+examples/object_detector.dat
+examples/object_detector_advanced_ex
+examples/train_object_detector
+*.swo
