@@ -1,6 +1,8 @@
 /*
     hanmaokun@outlook.com
 */
+#include <iostream>
+#include <fstream>
 
 #include "../dlib/svm_threaded.h"
 #include "../dlib/gui_widgets.h"
@@ -17,8 +19,7 @@
 using namespace std;
 using namespace dlib;
 
-const dlibRect fhog_svm_det(const char* img_file_name){
-    dlibRect ret_rect;
+const int* fhog_svm_det(const char* img_file_name){
     dlib::array<array2d<unsigned char> > images;
 
     images.resize(1);
@@ -31,12 +32,17 @@ const dlibRect fhog_svm_det(const char* img_file_name){
     const std::vector<rectangle> rects = detector(images[0]);
     cout << "Number of detections: "<< rects.size() << endl;
 
-    int i = 0;
+    int* ret_rect = new int[4];
     if(rects.size() > 0){
-        ret_rect.left = rects[0].left();
-        ret_rect.top = rects[0].top();
-        ret_rect.right = rects[0].right();
-        ret_rect.bottom = rects[0].bottom();
+        ret_rect[0] = rects[0].left();
+        ret_rect[1] = rects[0].top();
+        ret_rect[2] = rects[0].right();
+        ret_rect[3] = rects[0].bottom();
+    } else {
+        ret_rect[0] = 0;
+        ret_rect[1] = 0;
+        ret_rect[2] = 0;
+        ret_rect[3] = 0;
     }
 
     return ret_rect;

@@ -4,6 +4,7 @@
 
 
 #include <vector>
+#include <iostream>
 #include "fhog_svm_detector.h"
 
 // ----------------------------------------------------------------------------------------
@@ -16,8 +17,9 @@ int main()
     {
         {
             // Run the detector on images
-            const dlibRect rects = fhog_svm_det("./03903.jpg");
-            cout << rects.left << endl;
+            cout << "1" << endl;
+            const int* rects = fhog_svm_det("03903.jpg");
+            cout << rects[0] << endl;
         }
 
     }
