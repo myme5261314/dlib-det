@@ -47,6 +47,11 @@ const int* fhog_svm_det(const char* img_file_name){
     return ret_rect;
 }
 
+
+int test_dlib_add(int x, int y) {
+  return x+y;
+}
+
 /* test. */
 // int main()
 // {  
