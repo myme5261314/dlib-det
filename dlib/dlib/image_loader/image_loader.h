@@ -70,7 +70,9 @@ namespace dlib
                 throw image_load_error("bmp load error 2: header error");
 
             // now read the BITMAPFILEHEADER
-            if (in.sgetn(reinterpret_cast<char*>(buf),12) != 12)
+            int dbg_0 = in.sgetn(reinterpret_cast<char*>(buf),12);
+            cout << dbg_0 << endl;
+            if (dbg_0 != 12)
                 throw image_load_error("bmp load error 3: header error");
 
             bytes_read_so_far += 12;
@@ -134,8 +136,8 @@ namespace dlib
             */
 
 
-            if (biSize != 40)
-                throw image_load_error("bmp load error 6: header too small");
+            //if (biSize != 40)
+            //    throw image_load_error("bmp load error 6: header too small");
 
             // read and discard any extra bytes that are part of the header
             if (biSize > 40)
@@ -146,6 +148,10 @@ namespace dlib
                 }
                 bytes_read_so_far += biSize-40;
             }
+
+            cout << biSize << endl;
+            cout << biHeight << endl;
+            cout << biWidth << endl;
 
             image.set_size(biHeight, biWidth);
 

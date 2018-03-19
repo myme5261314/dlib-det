@@ -25,6 +25,10 @@ namespace dlib
         bool is_rgb() const;
         bool is_rgba() const;
 
+        std::vector<unsigned char> get_data() {
+            return data;
+        }
+
         template<typename T>
         void get_image( T& t_) const
         {

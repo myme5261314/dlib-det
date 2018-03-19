@@ -3,6 +3,7 @@
 */
 #include <iostream>
 #include <fstream>
+#include <strstream>
 
 #include "../dlib/svm_threaded.h"
 #include "../dlib/array.h"
@@ -18,11 +19,49 @@
 using namespace std;
 using namespace dlib;
 
-const int* fhog_svm_det(const char* img_path, const char* model_path){
+// struct membuf : std::streambuf
+// {
+//     membuf(char* begin, char* end) {
+//         this->setg(begin, begin, end);
+//     }
+// };
+
+struct membuf : std::streambuf {
+    membuf(char const *base, size_t size) {
+        char *p(const_cast<char *>(base));
+        this->setg(p, p, p + size);
+    }
+};
+
+struct imemstream : virtual membuf, std::istream {
+    imemstream(char const *base, size_t size)
+            : membuf(base, size), std::istream(static_cast<std::streambuf *>(this)) {
+    }
+};
+
+bool isfile(const char* str){
+    std::ifstream test(str); 
+    if (!test)
+    {
+      //std::cout << "The file doesn't exist" << std::endl;
+        return 0;
+    }
+    return 1;
+}
+
+const int* fhog_svm_det(const char* img_path, const char* model_path, int length){
     dlib::array<array2d<unsigned char> > images;
 
     images.resize(1);
-    load_image(images[0], img_path);
+
+    if(isfile(img_path)){
+        cout << "is iamge." << endl;
+        load_image(images[0], img_path);
+    }else{
+        char *img_content = (char *)img_path;
+        imemstream in(img_content, length);
+        load_bmp(images[0], in);
+    }
 
     typedef scan_fhog_pyramid<pyramid_down<6> > image_scanner_type;
     object_detector<image_scanner_type> detector;
