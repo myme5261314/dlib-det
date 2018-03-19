@@ -7,7 +7,7 @@
 
 
 // Return [0, 0, 0, 0] if not detected, [left, top, right, bottom] if detected.
-extern const int* fhog_svm_det(const char* img_file_name);
+extern const int* fhog_svm_det(const char* img_path, const char* model_path);
 
 extern int test_dlib_add(int x, int y);
 

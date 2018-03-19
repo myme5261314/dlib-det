@@ -12,3 +12,5 @@ examples/object_detector.dat
 examples/object_detector_advanced_ex
 examples/train_object_detector
 *.swo
+dlib-test/fhogtest
+dlib-test/fhogtest-static

@@ -18,7 +18,7 @@ int main()
         {
             // Run the detector on images
             cout << "1" << endl;
-            const int* rects = fhog_svm_det("03903.jpg");
+            const int* rects = fhog_svm_det("03903.jpg", "./object_detector.svm");
             cout << rects[0] << endl;
         }
 

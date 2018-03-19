@@ -18,15 +18,15 @@
 using namespace std;
 using namespace dlib;
 
-const int* fhog_svm_det(const char* img_file_name){
+const int* fhog_svm_det(const char* img_path, const char* model_path){
     dlib::array<array2d<unsigned char> > images;
 
     images.resize(1);
-    load_image(images[0], img_file_name);
+    load_image(images[0], img_path);
 
     typedef scan_fhog_pyramid<pyramid_down<6> > image_scanner_type;
     object_detector<image_scanner_type> detector;
-    deserialize("./object_detector.svm") >> detector;
+    deserialize(model_path) >> detector;
 
     const std::vector<rectangle> rects = detector(images[0]);
     cout << "Number of detections: "<< rects.size() << endl;
