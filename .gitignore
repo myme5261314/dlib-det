@@ -14,4 +14,3 @@ examples/train_object_detector
 *.swo
 dlib-test/fhogtest
 dlib-test/fhogtest-static
-*.bmp
