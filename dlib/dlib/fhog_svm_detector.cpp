@@ -54,20 +54,25 @@ const int* fhog_svm_det(const char* img_path, const char* model_path, int length
 
     images.resize(1);
 
+    array2d<unsigned char> sizeImg(450, 500);
+    array2d<unsigned char> loadedImg;
     if(isfile(img_path)){
-        cout << "is iamge." << endl;
-        load_image(images[0], img_path);
+        cout << "is image." << endl;
+        load_image(loadedImg, img_path);
+
+        resize_image(loadedImg, sizeImg);
     }else{
         char *img_content = (char *)img_path;
         imemstream in(img_content, length);
         load_bmp(images[0], in);
+        resize_image(images[0], sizeImg);
     }
 
     typedef scan_fhog_pyramid<pyramid_down<6> > image_scanner_type;
     object_detector<image_scanner_type> detector;
     deserialize(model_path) >> detector;
 
-    const std::vector<rectangle> rects = detector(images[0]);
+    const std::vector<rectangle> rects = detector(sizeImg);
     cout << "Number of detections: "<< rects.size() << endl;
 
     int* ret_rect = new int[4];
