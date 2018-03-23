@@ -45,8 +45,8 @@ def get_bndbox_lst(img_file_path):
     return ret_lst
 
 def convert():
-    imglab_xml_file = "/home/nlp/bigsur/devel/dlib/tools/imglab/build/t0.xml"
-    imglab_xml_file = xml_loc + "/t0.xml" 
+    imglab_xml_file = "/home/nlp/bigsur/devel/dlib/tools/imglab/build/s0.xml"
+    #imglab_xml_file = xml_loc + "/t0.xml" 
 
     imglab_tree = ET.ElementTree(file=imglab_xml_file)
     #imglab_tree_detail = deepcopy(imglab_tree)
@@ -79,7 +79,7 @@ def convert():
                 # part.set('x', '67')
                 # part.set('y', '68')
 
-    with open(xml_loc + "/t0_bk.xml", "w") as fh:
+    with open(xml_loc + "/s0_convert.xml", "w") as fh:
         imglab_tree.write(fh)
 
 def clean():
@@ -197,6 +197,25 @@ def select(num):
 
     tree.write(xml_loc + "/t0.xml")
 
+def save_frames():
+    import imutils
+
+    #src = "/home/nlp/bigsur/tmp/han/VID_20180323_084232.mp4"
+    src = "/home/nlp/bigsur/tmp/han/VID_20180323_084214.mp4"
+    vidcap = cv2.VideoCapture(src)
+    success,image = vidcap.read()
+    count = 0; 
+    interval = 15;
+    while success:
+        success,image = vidcap.read()
+        if count%interval == 0:
+            rotated = imutils.rotate(image, 270)
+            res = cv2.resize(rotated, dsize=(450, 500), interpolation=cv2.INTER_CUBIC)
+            cv2.imwrite("./output/frame%d.jpg" % int(count/interval), res)     # save frame as JPEG file
+            if cv2.waitKey(10) == 27:                     # exit if Escape is hit
+                break
+        count += 1
+
 if __name__ == '__main__':
     if mode == "convert":
         convert()
@@ -210,3 +229,5 @@ if __name__ == '__main__':
         resize_img()
     elif mode == "select":
         select(6000)
+    elif mode == "capture":
+        save_frames()
