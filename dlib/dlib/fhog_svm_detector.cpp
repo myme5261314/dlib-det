@@ -51,7 +51,7 @@ bool isfile(const char* str){
     return 1;
 }
 
-const int* fhog_svm_det(const char* img_path, const char* model_path, int length){
+const double* fhog_svm_det(const char* img_path, const char* model_path, int length){
     //array2d<unsigned char> sizeImg(450, 500);
     int L_tmpname = 200;
     array2d<unsigned char> loadedImg;
@@ -79,19 +79,23 @@ const int* fhog_svm_det(const char* img_path, const char* model_path, int length
     deserialize(model_path) >> detector;
 
     const std::vector<rectangle> rects = detector(loadedImg);
-    cout << "Number of detections: "<< rects.size() << endl;
+    std::vector<rect_detection> dets;
+    detector(loadedImg, dets);
+    cout << "Number of detections: "<< dets.size() << endl;
 
-    int* ret_rect = new int[4];
+    double* ret_rect = new double[5];
     if(rects.size() > 0){
-        ret_rect[0] = rects[0].left();
-        ret_rect[1] = rects[0].top();
-        ret_rect[2] = rects[0].right();
-        ret_rect[3] = rects[0].bottom();
+        ret_rect[0] = dets[0].rect.left();
+        ret_rect[1] = dets[0].rect.top();
+        ret_rect[2] = dets[0].rect.right();
+        ret_rect[3] = dets[0].rect.bottom();
+        ret_rect[4] = dets[0].detection_confidence;
     } else {
         ret_rect[0] = 0;
         ret_rect[1] = 0;
         ret_rect[2] = 0;
         ret_rect[3] = 0;
+        ret_rect[4] = 0.0;
     }
 
     return ret_rect;
