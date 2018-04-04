@@ -23,3 +23,4 @@ dlib-test/X_YinZhang/
 dlib-test/X_YinZhang_ori/
 dlib-test/x_id/
 dlib/tools/utils/output/
+dlib-test/*.xml

@@ -45,7 +45,7 @@ def get_bndbox_lst(img_file_path):
     return ret_lst
 
 def convert():
-    imglab_xml_file = "/home/nlp/bigsur/tmp/han/dlib-test/x_id/0.xml"
+    imglab_xml_file = "/home/nlp/bigsur/tmp/han/dlib-test/x_id/1.xml"
     #imglab_xml_file = xml_loc + "/t0.xml" 
 
     imglab_tree = ET.ElementTree(file=imglab_xml_file)
@@ -79,7 +79,7 @@ def convert():
                 # part.set('x', '67')
                 # part.set('y', '68')
 
-    with open("/home/nlp/bigsur/tmp/han/dlib-test/x_id/0_cvt.xml", "w") as fh:
+    with open("/home/nlp/bigsur/tmp/han/dlib-test/x_id/1_cvt.xml", "w") as fh:
         imglab_tree.write(fh)
 
 def clean():
@@ -183,6 +183,28 @@ def resize_img():
                 cv2.imwrite(os.path.join(target_folder, jpg_file_path.split('/')[-1]), resized_img)
                 finetune_xml(xml_file_path, target_folder, float(w)/500.0, float(h)/450.0)
 
+def newname(file_name):
+    return file_name[:-4] + '_.' + file_name.split('.')[-1]
+
+def rename():
+    src_img_folder = data_loc + 'chanxian/Xings_ssd_rec/selected'
+    for root_dir, dir_names, file_names in os.walk(src_img_folder):
+        for file_name in fnmatch.filter(file_names, "*.jpg"):
+            jpg_file_path = os.path.join(root_dir, file_name)
+            xml_file_path = jpg_file_path[:-4] + '.xml'
+            print(jpg_file_path)
+            print(xml_file_path)
+            tree = ET.ElementTree(file=xml_file_path)
+            root = tree.getroot()
+            objs = root.findall('object')
+            for obj in objs:
+                if 'QiTa_C' == obj.find('name').text:
+                    obj.find('name').text = 'ID_Kuang_1'
+
+            tree.write(xml_file_path)
+            os.rename(jpg_file_path, newname(jpg_file_path))
+            os.rename(xml_file_path, newname(xml_file_path))
+
 def select(num):
     tree = ET.ElementTree(file=xml_loc + "/t.xml")
     root = tree.getroot()
@@ -217,6 +239,8 @@ def save_frames():
         count += 1
 
 if __name__ == '__main__':
+    if mode == "rename":
+        rename()
     if mode == "convert":
         convert()
     elif mode == "clean":
