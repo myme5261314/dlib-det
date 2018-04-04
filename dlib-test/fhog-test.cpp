@@ -18,7 +18,7 @@ int main()
     try
     {
         {
-            std::ifstream fin("419207526.bmp");
+            std::ifstream fin("419207526_1.jpg");
             if (!fin)
                 cout << "failed to open file." << endl;
 
@@ -33,7 +33,8 @@ int main()
             cout << ctr << endl;
             cout << text.length() << endl;
             const char* data = text.c_str();
-            const double* rects = fhog_svm_det(data, "object_detector.svm", text.length());
+
+            const int* rects = fhog_svm_det("IMG_20170124_205102_1.jpg", "object_detector.svm", text.length());
             cout << rects[0] << endl;
             cout << rects[1] << endl;
             cout << rects[2] << endl;

@@ -14,3 +14,12 @@ examples/train_object_detector
 *.swo
 dlib-test/fhogtest
 dlib-test/fhogtest-static
+VID_20180323_084214.mp4
+VID_20180323_084232.mp4
+dlib-test/IMG_20170124_205102_1.jpg
+dlib-test/IMG_20180329_104839.jpg
+dlib-test/Untitled Folder/
+dlib-test/X_YinZhang/
+dlib-test/X_YinZhang_ori/
+dlib-test/x_id/
+dlib/tools/utils/output/

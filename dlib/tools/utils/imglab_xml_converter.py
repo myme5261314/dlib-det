@@ -35,7 +35,7 @@ def get_bndbox_lst(img_file_path):
     ret_lst = []
     for obj in objs:
         obj_name = obj.find('name')
-        if obj_name.text in ['QiTa_C']: 
+        if obj_name.text in ['ID_Kuang_1']: 
             bnd_box = obj.find('bndbox')
             xmin = bnd_box.find('xmin').text
             xmax = bnd_box.find('xmax').text
@@ -45,7 +45,7 @@ def get_bndbox_lst(img_file_path):
     return ret_lst
 
 def convert():
-    imglab_xml_file = "/home/nlp/bigsur/devel/dlib/tools/imglab/build/s0.xml"
+    imglab_xml_file = "/home/nlp/bigsur/tmp/han/dlib-test/x_id/0.xml"
     #imglab_xml_file = xml_loc + "/t0.xml" 
 
     imglab_tree = ET.ElementTree(file=imglab_xml_file)
@@ -79,7 +79,7 @@ def convert():
                 # part.set('x', '67')
                 # part.set('y', '68')
 
-    with open(xml_loc + "/s0_convert.xml", "w") as fh:
+    with open("/home/nlp/bigsur/tmp/han/dlib-test/x_id/0_cvt.xml", "w") as fh:
         imglab_tree.write(fh)
 
 def clean():
@@ -205,13 +205,13 @@ def save_frames():
     vidcap = cv2.VideoCapture(src)
     success,image = vidcap.read()
     count = 0; 
-    interval = 15;
+    interval = 1;
     while success:
         success,image = vidcap.read()
         if count%interval == 0:
             rotated = imutils.rotate(image, 270)
-            res = cv2.resize(rotated, dsize=(450, 500), interpolation=cv2.INTER_CUBIC)
-            cv2.imwrite("./output/frame%d.jpg" % int(count/interval), res)     # save frame as JPEG file
+            #res = cv2.resize(rotated, dsize=(450, 500), interpolation=cv2.INTER_CUBIC)
+            cv2.imwrite("./output/frame%d.jpg" % int(count/interval), rotated)     # save frame as JPEG file
             if cv2.waitKey(10) == 27:                     # exit if Escape is hit
                 break
         count += 1
