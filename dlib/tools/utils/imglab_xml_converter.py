@@ -35,7 +35,7 @@ def get_bndbox_lst(img_file_path):
     ret_lst = []
     for obj in objs:
         obj_name = obj.find('name')
-        if obj_name.text in ['ID_Kuang_1']: 
+        if obj_name.text in ['X_YinZhang']:
             bnd_box = obj.find('bndbox')
             xmin = bnd_box.find('xmin').text
             xmax = bnd_box.find('xmax').text
@@ -45,7 +45,7 @@ def get_bndbox_lst(img_file_path):
     return ret_lst
 
 def convert():
-    imglab_xml_file = "/home/nlp/bigsur/tmp/han/dlib-test/x_id/1.xml"
+    imglab_xml_file = "/home/nlp/bigsur/tmp/han/dlib/tools/imglab/build/yz.xml"
     #imglab_xml_file = xml_loc + "/t0.xml" 
 
     imglab_tree = ET.ElementTree(file=imglab_xml_file)
@@ -79,7 +79,7 @@ def convert():
                 # part.set('x', '67')
                 # part.set('y', '68')
 
-    with open("/home/nlp/bigsur/tmp/han/dlib-test/x_id/1_cvt.xml", "w") as fh:
+    with open("/home/nlp/bigsur/tmp/han/dlib/tools/imglab/build/yz_cvt.xml", "w") as fh:
         imglab_tree.write(fh)
 
 def clean():
@@ -238,6 +238,154 @@ def save_frames():
                 break
         count += 1
 
+def not_grey(img_path):
+    img_data = cv2.imread(img_path)
+    r, g, b = np.mean(img_data, axis=(0,1))
+    if r>150 and g>150 and b>150:
+        return False
+    return True
+
+def pick():
+    from shutil import copyfile
+
+    src_img_folder = "/home/nlp/bigsur/tmp/chanxian_shuju"
+    dst_folder = "/home/nlp/bigsur/tmp/chanxian_shuju_xsz"
+    if os.path.exists(dst_folder):
+        shutil.rmtree(dst_folder)
+    os.makedirs(dst_folder)
+    ctr = 0
+    for root_dir, dir_names, file_names in os.walk(src_img_folder):
+        for xml_file_name in fnmatch.filter(file_names, "*.xml"):
+            xml_file_path = os.path.join(root_dir, xml_file_name)
+            tree = ET.ElementTree(file=xml_file_path)
+            root = tree.getroot()
+            objs = root.findall('object')
+            valid = False
+            for obj in objs:
+                if 'X_Kuang_1' == obj.find('name').text:
+                    valid = True
+                    break
+
+            if valid:
+                ctr += 1
+                img_name = ''
+                img_path = ''
+                for suffix in ['.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG']:
+                    img_name = xml_file_name[:-4] + suffix
+                    img_path = os.path.join(root_dir, img_name)
+                    if os.path.exists(img_path):
+                        break
+                if not_grey(img_path):
+                    dst_xml_path = os.path.join(dst_folder, str(ctr) + '_' + xml_file_name)
+                    copyfile(xml_file_path, dst_xml_path)
+                    dst_img_path = os.path.join(dst_folder, str(ctr) + '_' + img_name)
+                    copyfile(img_path, dst_img_path)
+
+def rotate_bound(image, angle):
+    # grab the dimensions of the image and then determine the
+    # center
+    (h, w) = image.shape[:2]
+    (cX, cY) = (w // 2, h // 2)
+
+    # grab the rotation matrix (applying the negative of the
+    # angle to rotate clockwise), then grab the sine and cosine
+    # (i.e., the rotation components of the matrix)
+    M = cv2.getRotationMatrix2D((cX, cY), -angle, 1.0)
+    cos = np.abs(M[0, 0])
+    sin = np.abs(M[0, 1])
+
+    # compute the new bounding dimensions of the image
+    nW = int((h * sin) + (w * cos))
+    nH = int((h * cos) + (w * sin))
+
+    # adjust the rotation matrix to take into account translation
+    M[0, 2] += (nW / 2) - cX
+    M[1, 2] += (nH / 2) - cY
+
+    # perform the actual rotation and return the image
+    return cv2.warpAffine(image, M, (nW, nH))
+
+def rotate_img(img_path):
+    img_data = cv2.imread(img_path)
+    new_img = rotate_bound(img_data, 90)
+    return new_img
+
+def trans_coord(x, y, angel, W, H, xmin, ymin):
+    x = int(x)
+    y = int(y)
+    if angel == 90:
+        return (H-y, x)
+    if angel == 180:
+        return (W-x, H-y)
+    if angel == 270 or angel == -90:
+        return (y, W-x)
+    if angel == 0:
+        return (x-xmin, y-ymin)
+
+    return (x, y)
+
+def fix_bndbox(sizes, objs, angel, W, H, xmin_, ymin_):
+    if len(sizes) == 0:
+        return
+
+    if angel == -90 or angel == 90  or  angel == 270:
+        sizes[0].find('width').text = str(H)
+        sizes[0].find('height').text = str(W)
+    else:
+        sizes[0].find('width').text = str(W)
+        sizes[0].find('height').text = str(H)
+
+    #fix bouding box
+    for obj in objs:
+        bndbox = obj.find('bndbox')
+        xmin = bndbox.find('xmin').text
+        ymin = bndbox.find('ymin').text
+        xmax = bndbox.find('xmax').text
+        ymax = bndbox.find('ymax').text
+        x, y = trans_coord(xmin, ymin, angel, W, H, xmin_ , ymin_)
+        bndbox.find('xmin').text = str(x)
+        bndbox.find('ymin').text = str(y)
+        x, y = trans_coord(xmax, ymax, angel, W, H, xmin_ , ymin_)
+        bndbox.find('xmax').text = str(x)
+        bndbox.find('ymax').text = str(y)
+
+def rotateall():
+    from shutil import copyfile
+    src_img_folder = "/home/nlp/bigsur/tmp/chanxian_shuju_yz"
+    for root_dir, dir_names, file_names in os.walk(src_img_folder):
+        for xml_file_name in fnmatch.filter(file_names, "*.xml"):
+            xml_file_path = os.path.join(root_dir, xml_file_name)
+            tree = ET.ElementTree(file=xml_file_path)
+            root = tree.getroot()
+            sizes = tree.findall('size')
+            objs = root.findall('object')
+            for obj in objs:
+                if 'X_Kuang_1' == obj.find('name').text:
+                    bnd_box = obj.find('bndbox')
+                    xmin = int(bnd_box.find('xmin').text)
+                    xmax = int(bnd_box.find('xmax').text)
+                    ymin = int(bnd_box.find('ymin').text)
+                    ymax = int(bnd_box.find('ymax').text)
+                    if abs(int(xmax) - int(xmin)) < abs(int(ymax) - int(ymin)):
+                        img_name = ''
+                        img_path = ''
+                        for suffix in ['.jpg', '.jpeg', '.png', '.JPG', '.JPEG', '.PNG']:
+                            img_name = xml_file_name[:-4] + suffix
+                            img_path = os.path.join(root_dir, img_name)
+                            if os.path.exists(img_path):
+                                break
+                        rotated_img = rotate_img(img_path)
+
+                        img_data = cv2.imread(img_path)
+                        img_width = img_data.shape[1]
+                        img_height = img_data.shape[0]
+
+                        fix_bndbox(sizes, objs, 90, img_width, img_height, 0, 0)
+                        cv2.imwrite(img_path, rotated_img)
+                        tree.write(xml_file_path)
+
+                    break
+
 if __name__ == '__main__':
     if mode == "rename":
         rename()
@@ -255,3 +403,7 @@ if __name__ == '__main__':
         select(6000)
     elif mode == "capture":
         save_frames()
+    elif mode == "pick":
+        pick()
+    elif mode == "rotate":
+        rotateall()
