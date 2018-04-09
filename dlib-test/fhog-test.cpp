@@ -47,7 +47,7 @@ int main(int argc, char** argv)
             cout << text.length() << endl;
             const char* data = text.c_str();
 
-            const double* rects = fhog_svm_det(data, "object_detector_yz.svm", text.length());
+            const double* rects = fhog_svm_det(data, "object_detector_xsz.svm", text.length());
             cout << rects[0] << endl;
             cout << rects[1] << endl;
             cout << rects[2] << endl;
