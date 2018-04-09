@@ -53,6 +53,7 @@ int main(int argc, char** argv)
             cout << rects[2] << endl;
             cout << rects[3] << endl;
             cout << rects[4] << endl;
+            cout << fdetect_blur(data, text.length()) << endl;
 
             // dlib::image_window win;
             // win.clear_overlay();
