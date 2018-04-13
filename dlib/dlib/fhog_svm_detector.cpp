@@ -54,9 +54,22 @@ bool isfile(const char* str){
     return 1;
 }
 
+template <typename T>
+int image_binary_to_array2d(const char* binary, int length, array2d<T> &out) {
+    char name_buffer[] = "/tmp/scan-detect-XXXXXX";
+    if (mkstemp(name_buffer) != 0) {
+        FILE *tempfile = fopen(name_buffer, "wb");
+        fwrite(binary, sizeof(char), length, tempfile);
+        fflush(tempfile);
+        load_image(out, name_buffer);
+        remove(name_buffer);
+        return 1;
+    }
+    return 0;
+}
+
 const double* fhog_svm_det(const char* img_path, const char* model_path, int length){
     //array2d<unsigned char> sizeImg(450, 500);
-    int L_tmpname = 200;
     array2d<float> loadedImg;
     if(isfile(img_path)){
         cout << "is image." << endl;
@@ -64,30 +77,19 @@ const double* fhog_svm_det(const char* img_path, const char* model_path, int len
 
         //resize_image(loadedImg, sizeImg);
     }else{
-        char *img_content = (char *)img_path;
-        char name_buffer[L_tmpname];
-        tmpnam(name_buffer);
-        FILE *tempfile = fopen(name_buffer, "wb");
-        fwrite(img_content, sizeof(char), length, tempfile);
-        fflush(tempfile);
-        //imemstream in(img_content, length);
-        //load_bmp(images[0], in);
-        //resize_image(images[0], sizeImg);
-        load_image(loadedImg, name_buffer);
-        remove(name_buffer);
+        image_binary_to_array2d(img_path, length, loadedImg);
     }
 
     typedef scan_fhog_pyramid<pyramid_down<6> > image_scanner_type;
     object_detector<image_scanner_type> detector;
     deserialize(model_path) >> detector;
 
-    const std::vector<rectangle> rects = detector(loadedImg);
     std::vector<rect_detection> dets;
     detector(loadedImg, dets);
     cout << "Number of detections: "<< dets.size() << endl;
 
     double* ret_rect = new double[5];
-    if(rects.size() > 0){
+    if(dets.size() > 0){
         ret_rect[0] = dets[0].rect.left();
         ret_rect[1] = dets[0].rect.top();
         ret_rect[2] = dets[0].rect.right();
@@ -108,23 +110,12 @@ const double* fhog_svm_det(const char* img_path, const char* model_path, int len
 
 double fdetect_blur(const char* img_path, int length) {
     //array2d<unsigned char> sizeImg(450, 500);
-    int L_tmpname = 200;
     array2d<unsigned char> loadedImg;
     if(isfile(img_path)){
         cout << "is image." << endl;
         load_image(loadedImg, img_path);
     }else{
-        char *img_content = (char *)img_path;
-        char name_buffer[L_tmpname];
-        tmpnam(name_buffer);
-        FILE *tempfile = fopen(name_buffer, "wb");
-        fwrite(img_content, sizeof(char), length, tempfile);
-        fflush(tempfile);
-        //imemstream in(img_content, length);
-        //load_bmp(images[0], in);
-        //resize_image(images[0], sizeImg);
-        load_image(loadedImg, name_buffer);
-        remove(name_buffer);
+        image_binary_to_array2d(img_path, length, loadedImg);
     }
     float laplacian_raw [] = {0, 1, 0, 1, -4, 1, 0, 1, 0};
     array2d<float> laplacian_filt(3, 3);
@@ -134,7 +125,7 @@ double fdetect_blur(const char* img_path, int length) {
         }
     }
     array2d<float> imout(loadedImg.nr(), loadedImg.nc());
-    rectangle rect = spatially_filter_image(loadedImg, imout, mat(laplacian_filt));
+    spatially_filter_image(loadedImg, imout, mat(laplacian_filt));
     double var = variance(mat(imout));
     return var;
 
